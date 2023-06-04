@@ -15,6 +15,7 @@ dependencies:
 
 default-extensions:
   - ImportQualifiedPost
+  - RecordWildCards
 
 ghc-options:
   - -Wall
