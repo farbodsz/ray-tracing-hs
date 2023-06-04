@@ -24,7 +24,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      RayTracing.Color
+      RayTracing.Main
+      RayTracing.Vec3
   other-modules:
       Paths_ray_tracing_hs
   hs-source-dirs:

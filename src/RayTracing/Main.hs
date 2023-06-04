@@ -1,9 +1,11 @@
 --------------------------------------------------------------------------------
 
-module Lib (main) where
+module RayTracing.Main (main) where
 
 import Control.Monad (forM_)
-import GHC.Float (double2Int, int2Double)
+import GHC.Float (int2Double)
+import RayTracing.Color (translateColor)
+import RayTracing.Vec3 (Color, Vec3 (Vec3))
 import System.IO (hPutStrLn, stderr)
 
 --------------------------------------------------------------------------------
@@ -33,15 +35,7 @@ data PPM = PPM
     , ppmBody :: ImageBody
     }
 
-type ImageBody = [[Pixel]]
-
--- | For now, this will be RGB in range [0, 255]
-data Pixel = Pixel
-    { pxlR :: Int
-    , pxlG :: Int
-    , pxlB :: Int
-    }
-    deriving (Eq, Show)
+type ImageBody = [[Color Int]]
 
 --------------------------------------------------------------------------------
 -- Test image
@@ -63,21 +57,17 @@ testImage =
 testImageBody :: ImageBody
 testImageBody = map mkRow ys
   where
-    mkRow j = map (\i -> calcPixel (int2Double i) (int2Double j)) xs
+    mkRow j = map (\i -> mkColorPxl (int2Double i) (int2Double j)) xs
 
     xs = [0 .. imgW - 1]
     ys = [imgH - 1, imgH - 2 .. 0]
 
-    calcPixel i j =
-        mkPixel
-            (i / (int2Double imgW - 1))
-            (j / (int2Double imgH - 1))
-            0.25
-
-mkPixel :: Double -> Double -> Double -> Pixel
-mkPixel r g b = Pixel (to256 r) (to256 g) (to256 b)
-  where
-    to256 x = double2Int $ x * 255.999
+    mkColorPxl i j =
+        translateColor $
+            Vec3
+                (i / (int2Double imgW - 1))
+                (j / (int2Double imgH - 1))
+                0.25
 
 --------------------------------------------------------------------------------
 -- Rendering
@@ -94,6 +84,6 @@ renderImage ppm = renderHeaders ppm ++ renderImageBody (ppmBody ppm)
 renderImageBody :: ImageBody -> [String]
 renderImageBody = concatMap (map pxlToStr)
   where
-    pxlToStr (Pixel r g b) = unwords $ show <$> [r, g, b]
+    pxlToStr (Vec3 r g b) = unwords $ show <$> [r, g, b]
 
 --------------------------------------------------------------------------------
