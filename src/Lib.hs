@@ -2,13 +2,24 @@
 
 module Lib (main) where
 
+import Control.Monad (forM_)
 import GHC.Float (double2Int, int2Double)
+import System.IO (hPutStrLn, stderr)
 
 --------------------------------------------------------------------------------
+-- IO
 
--- Entry point
 main :: IO ()
-main = mapM_ putStrLn (renderImage testImage)
+main = outputImage testImage
+
+outputImage :: PPM -> IO ()
+outputImage ppm = do
+    forM_ (zip [length rows - 1, length rows - 2 .. 0] rows) $ \(j, row) -> do
+        hPutStrLn stderr $ "Scanlines remaining: " ++ show j
+        putStrLn row
+    hPutStrLn stderr "Done."
+  where
+    rows = renderImage ppm
 
 --------------------------------------------------------------------------------
 -- Types
