@@ -26,6 +26,7 @@ library
   exposed-modules:
       RayTracing.Color
       RayTracing.Main
+      RayTracing.Ray
       RayTracing.Vec3
   other-modules:
       Paths_ray_tracing_hs
