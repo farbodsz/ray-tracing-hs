@@ -3,6 +3,7 @@
 module RayTracing.Main (main) where
 
 import Control.Monad (forM_)
+import Data.List.Extra (chunksOf)
 import GHC.Float (int2Double)
 import RayTracing.Color (translateColor)
 import RayTracing.Vec3 (Color, Vec3 (Vec3))
@@ -16,12 +17,14 @@ main = outputImage testImage
 
 outputImage :: PPM -> IO ()
 outputImage ppm = do
-    forM_ (zip [length rows - 1, length rows - 2 .. 0] rows) $ \(j, row) -> do
+    forM_ (zip idxs rowGroups) $ \(j, row) -> do
         hPutStrLn stderr $ "Scanlines remaining: " ++ show j
-        putStrLn row
+        outputRow row
     hPutStrLn stderr "Done."
   where
-    rows = renderImage ppm
+    outputRow = mapM_ putStrLn
+    idxs = [length rowGroups - 1, length rowGroups - 2 .. 0]
+    rowGroups = chunksOf (ppmRows ppm) (renderImage ppm)
 
 --------------------------------------------------------------------------------
 -- Types
