@@ -1,0 +1,60 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           ray-tracing-hs
+version:        0.1.0.0
+synopsis:       Implementation of Ray Tracing in One Weekend in Haskell
+description:    Please see the README on GitHub at <https://github.com/farbodsz/ray-tracing-hs#readme>
+category:       Text
+homepage:       https://github.com/farbodsz/ray-tracing-hs#readme
+bug-reports:    https://github.com/farbodsz/ray-tracing-hs/issues
+author:         Farbod Salamat-Zadeh
+maintainer:     Farbod Salamat-Zadeh
+copyright:      2023 Farbod Salamat-Zadeh
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/farbodsz/ray-tracing-hs
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_ray_tracing_hs
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable ray-tracing-hs-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_ray_tracing_hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , ray-tracing-hs
+  default-language: Haskell2010
+
+test-suite ray-tracing-hs-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_ray_tracing_hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , ray-tracing-hs
+  default-language: Haskell2010

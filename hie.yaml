@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "ray-tracing-hs:lib"
+
+    - path: "./app/Main.hs"
+      component: "ray-tracing-hs:exe:ray-tracing-hs-exe"
+
+    - path: "./test"
+      component: "ray-tracing-hs:test:ray-tracing-hs-test"
