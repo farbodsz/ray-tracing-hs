@@ -4,9 +4,20 @@ module RayTracing.Main (main) where
 
 import Control.Monad (forM_)
 import Data.List.Extra (chunksOf)
-import GHC.Float (int2Double)
-import RayTracing.Color (translateColor)
-import RayTracing.Vec3 (Color, Vec3 (Vec3))
+import GHC.Float (double2Int, int2Double)
+import RayTracing.Color (blue, linearBlend, white, writeColor)
+import RayTracing.Ray (Ray (..))
+import RayTracing.Vec3 (
+    Color,
+    Pixel (..),
+    Point3,
+    Vec3 (Vec3),
+    vempty,
+    vminus,
+    vnegate,
+    vplus,
+    vscale,
+ )
 import System.IO (hPutStrLn, stderr)
 
 --------------------------------------------------------------------------------
@@ -15,7 +26,7 @@ import System.IO (hPutStrLn, stderr)
 main :: IO ()
 main = outputImage testImage
 
-outputImage :: PPM -> IO ()
+outputImage :: Image -> IO ()
 outputImage ppm = do
     forM_ (zip idxs rowGroups) $ \(j, row) -> do
         hPutStrLn stderr $ "Scanlines remaining: " ++ show j
@@ -30,7 +41,7 @@ outputImage ppm = do
 -- Types
 
 -- | PPM image (portable Pix Map has an image header and body).
-data PPM = PPM
+data Image = PPM
     { ppmFormat :: String
     , ppmCols :: Int
     , ppmRows :: Int
@@ -38,16 +49,52 @@ data PPM = PPM
     , ppmBody :: ImageBody
     }
 
-type ImageBody = [[Color Int]]
+type ImageBody = [[Pixel]]
 
 --------------------------------------------------------------------------------
--- Test image
+-- Image, camera, dimensions
 
-imgW, imgH :: Int
-imgW = 256
-imgH = 256
+aspectRatio :: Double
+aspectRatio = 16 / 9
 
-testImage :: PPM
+imgW :: Int
+imgW = 400
+
+imgH :: Int
+imgH = double2Int $ int2Double imgW / aspectRatio
+
+-- Camera
+
+viewportH :: Double
+viewportH = 2
+
+viewportW :: Double
+viewportW = aspectRatio * viewportH
+
+focalLength :: Double
+focalLength = 1
+
+--
+
+origin :: Point3
+origin = vempty
+
+horizontal :: Point3
+horizontal = Vec3 viewportW 0 0
+
+vertical :: Point3
+vertical = Vec3 0 viewportH 0
+
+lowerLeftCorner :: Point3
+lowerLeftCorner =
+    foldl1 vminus [origin, half horizontal, half vertical, Vec3 0 0 focalLength]
+  where
+    half = fmap (/ 2)
+
+--------------------------------------------------------------------------------
+-- Image
+
+testImage :: Image
 testImage =
     PPM
         { ppmFormat = "P3"
@@ -58,24 +105,38 @@ testImage =
         }
 
 testImageBody :: ImageBody
-testImageBody = map mkRow ys
-  where
-    mkRow j = map (\i -> mkColorPxl (int2Double i) (int2Double j)) xs
+testImageBody = mkRow <$> [imgH - 1, imgH - 2 .. 0]
 
-    xs = [0 .. imgW - 1]
-    ys = [imgH - 1, imgH - 2 .. 0]
+mkRow :: Int -> [Pixel]
+mkRow j = flip mkColorPxl j <$> [0 .. imgW - 1]
 
-    mkColorPxl i j =
-        translateColor $
-            Vec3
-                (i / (int2Double imgW - 1))
-                (j / (int2Double imgH - 1))
-                0.25
+mkColorPxl :: Int -> Int -> Pixel
+mkColorPxl i j =
+    let
+        u = int2Double i / int2Double (imgW - 1)
+        v = int2Double j / int2Double (imgH - 1)
+     in
+        writeColor $
+            rayColor $
+                Ray
+                    { rayOrig = origin
+                    , rayDir =
+                        foldr1
+                            vplus
+                            [ lowerLeftCorner
+                            , vscale u horizontal
+                            , vscale v vertical
+                            , vnegate origin
+                            ]
+                    }
+
+rayColor :: Ray -> Color Double
+rayColor = linearBlend white blue
 
 --------------------------------------------------------------------------------
 -- Rendering
 
-renderImage :: PPM -> [String]
+renderImage :: Image -> [String]
 renderImage ppm = renderHeaders ppm ++ renderImageBody (ppmBody ppm)
   where
     renderHeaders PPM {..} =
@@ -87,6 +148,6 @@ renderImage ppm = renderHeaders ppm ++ renderImageBody (ppmBody ppm)
 renderImageBody :: ImageBody -> [String]
 renderImageBody = concatMap (map pxlToStr)
   where
-    pxlToStr (Vec3 r g b) = unwords $ show <$> [r, g, b]
+    pxlToStr (Pixel (Vec3 r g b)) = unwords $ show <$> [r, g, b]
 
 --------------------------------------------------------------------------------
