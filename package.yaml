@@ -41,14 +41,3 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - ray-tracing-hs
-
-tests:
-  ray-tracing-hs-test:
-    main: Spec.hs
-    source-dirs: test
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - ray-tracing-hs

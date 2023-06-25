@@ -1,4 +1,4 @@
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 module RayTracing.Main (main) where
 
@@ -20,7 +20,7 @@ import RayTracing.Vec3 (
  )
 import System.IO (hPutStrLn, stderr)
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 -- IO
 
 main :: IO ()
@@ -37,7 +37,7 @@ outputImage ppm = do
     idxs = [length rowGroups - 1, length rowGroups - 2 .. 0]
     rowGroups = chunksOf (ppmRows ppm) (renderImage ppm)
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 -- Types
 
 -- | PPM image (portable Pix Map has an image header and body).
@@ -51,7 +51,7 @@ data Image = PPM
 
 type ImageBody = [[Pixel]]
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 -- Image, camera, dimensions
 
 aspectRatio :: Double
@@ -91,7 +91,7 @@ lowerLeftCorner =
   where
     half = fmap (/ 2)
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 -- Image
 
 testImage :: Image
@@ -111,39 +111,22 @@ mkRow :: Int -> [Pixel]
 mkRow j = flip mkColorPxl j <$> [0 .. imgW - 1]
 
 mkColorPxl :: Int -> Int -> Pixel
-mkColorPxl i j =
-    let
-        u = int2Double i / int2Double (imgW - 1)
-        v = int2Double j / int2Double (imgH - 1)
-     in
-        writeColor $
-            rayColor $
-                Ray
-                    { rayOrig = origin
-                    , rayDir =
-                        foldr1
-                            vplus
-                            [ lowerLeftCorner
-                            , vscale u horizontal
-                            , vscale v vertical
-                            , vnegate origin
-                            ]
-                    }
+mkColorPxl i j = writeColor . rayColor $ Ray origin rayDir
+  where
+    rayDir = foldr1 vplus [lowerLeftCorner, vscale u horizontal, vscale v vertical, vnegate origin]
+    u = int2Double i / int2Double (imgW - 1)
+    v = int2Double j / int2Double (imgH - 1)
 
 rayColor :: Ray -> Color Double
 rayColor = linearBlend white blue
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 -- Rendering
 
 renderImage :: Image -> [String]
 renderImage ppm = renderHeaders ppm ++ renderImageBody (ppmBody ppm)
   where
-    renderHeaders PPM {..} =
-        [ ppmFormat
-        , show ppmCols ++ " " ++ show ppmRows
-        , show ppmMaxColorVal
-        ]
+    renderHeaders PPM {..} = [ppmFormat, show ppmCols ++ " " ++ show ppmRows, show ppmMaxColorVal]
 
 renderImageBody :: ImageBody -> [String]
 renderImageBody = concatMap (map pxlToStr)

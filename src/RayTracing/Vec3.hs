@@ -1,7 +1,13 @@
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 module RayTracing.Vec3 (
     Vec3 (..),
+
+    -- * Vector properties
+    vempty,
+    unitVector,
+    vlength,
+    vlengthSquared,
 
     -- * Arithmetic operations
     vplus,
@@ -11,14 +17,6 @@ module RayTracing.Vec3 (
     (<+>),
     (<#>),
     (<.>),
-
-    -- * Vector properties
-    vempty,
-    unitVector,
-    vlength,
-    vlengthSquared,
-
-    -- * Utilities
     vnegate,
     vscale,
 
@@ -28,15 +26,14 @@ module RayTracing.Vec3 (
     Pixel (..),
 ) where
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+-- Vector
 
 data Vec3 a = Vec3 a a a
     deriving (Eq, Show)
 
 vempty :: Num a => Vec3 a
 vempty = Vec3 0 0 0
-
---------------------------------------------------------------------------------
 
 vplus :: Num a => Vec3 a -> Vec3 a -> Vec3 a
 (Vec3 p q r) `vplus` (Vec3 x y z) = Vec3 (p + x) (q + y) (r + z)
@@ -65,8 +62,6 @@ vnegate = fmap negate
 (<.>) :: Num a => Vec3 a -> Vec3 a -> a
 (<.>) = vdot
 
---------------------------------------------------------------------------------
-
 vlength :: Floating a => Vec3 a -> a
 vlength v = sqrt $ vlengthSquared v
 
@@ -79,7 +74,8 @@ unitVector vec = (/ vlength vec) <$> vec
 instance Functor Vec3 where
     fmap f (Vec3 x y z) = Vec3 (f x) (f y) (f z)
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+-- Aliases
 
 -- | 3D point.
 type Point3 = Vec3 Double
@@ -91,4 +87,4 @@ type Color = Vec3
 newtype Pixel = Pixel {unPixel :: Color Int}
     deriving (Eq, Show)
 
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
